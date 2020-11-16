@@ -6,35 +6,21 @@ Store and display content on your own personal website. Interact richly with oth
 ## Features
 
 * store posts in SQLite database
-  * cache posts as JSON flatfiles inside Git repository
+  * cache posts as JSON flat files inside Git repository
 * full-text search
 * complete export for backup
 * syndicate/backfeed (export/import)
-  * GitHub (full)
-  * Twitter (partial)
 
 ### IndieWeb-specific
 
-* IndieAuth
-  * server
-  * client
-* Micropub
-  * server
-  * editors
-* Microsob
-  * reader
-  * server
-* Webmention
-  * send
-  * receive
-    * Salmention
-    * Vouch
-* WebSub
+* Webmention send & receive (+Salmention, +Vouch)
+* WebSub pub & sub
+* IndieAuth, Micropub and Microsub servers
 
 ## Self-hosted Install
 
 1) [Create a web presence](https://github.com/angelogladding/ghost)
-2) Provide `angelogadding/canopy` to the application installer
+2) Enter `canopy` as GitHub Repo and click `INSTALL`.
 
 ## Third-party hosts
 
