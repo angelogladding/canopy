@@ -41,9 +41,11 @@ class Home:
     def _get(self):
         # web.tx.request.uri
         try:
-            name = tx.db.select("posts", where="url = /me")[0]["name"]
+            name = tx.db.select("posts", where="url = ?", vals=["/me"])[0]
         except IndexError:
             return tmpl.new(tx)
+        finally:
+            name = name["profile"]["name"]
         # recent_public = tx.db.select("entries",
         #                              where="visibility = public",
         #                              order="desc", limit=20)
