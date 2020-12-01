@@ -1,5 +1,6 @@
 """A full-stack IndieWeb client."""
 
+import sql
 import web
 from web import tx
 
@@ -20,15 +21,17 @@ tmpl = web.templates(__name__)
 
 @app.wrap
 def contextualize(handler, app):
-    db = sql.db(f"{tx.request.uri.host}.db")
-    db.define(posts="""post BLOB,
+    """Contextualize this thread based upon the host of the request."""
+    tx.me = tx.request.uri.host
+    db = sql.db(f"{tx.me}.db")
+    db.define(posts="""post JSON,
                        published TEXT AS
                            (json_extract(post, '$.published')) STORED,
                        url TEXT AS
                            (json_extract(post, '$.url')) STORED""")
     tx.db = db
     yield
-    # TODO wrap template
+    # TODO wrap in template
 
 
 @app.route(r"")
@@ -50,9 +53,8 @@ class Home:
 
     def _post(self):
         name = web.form("name").name
-        post = {"url": "/me", "published": pendulum.now("UTC"),
-                "profile": {"name": name}}
-        tx.db.insert("posts", post=json.dumps(post))
+        tx.db.insert("posts", post={"url": "/me", "published": web.utcnow(),
+                                    "profile": {"name": name, "url": tx.me}})
 
 
 @app.route(r"\d{{4}}")
