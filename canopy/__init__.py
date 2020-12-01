@@ -24,11 +24,11 @@ def contextualize(handler, app):
     """Contextualize this thread based upon the host of the request."""
     tx.me = tx.request.uri.host
     db = sql.db(f"{tx.me}.db")
-    db.define(posts="""post JSON,
-                       published TEXT AS
-                           (json_extract(post, '$.published')) STORED,
-                       url TEXT AS
-                           (json_extract(post, '$.url')) STORED""")
+    db.define(entries="""entry JSON,
+                         published TEXT AS
+                             (json_extract(post, '$.published')) STORED,
+                         url TEXT AS
+                             (json_extract(post, '$.url')) STORED""")
     tx.host.db = db
     yield
     # TODO wrap in template
@@ -39,24 +39,28 @@ class Home:
     """."""
 
     def _get(self):
-        # web.tx.request.uri
         try:
-            post = tx.db.select("posts", where="url = ?",
-                                vals=["/me"])[0]["post"]
+            myself = tx.db.select("entries", where="url = '/me'")[0]["entry"]
         except IndexError:
             return tmpl.new()
+        entries = tx.db.select("entries, json_tree(entries.entry, '$.name')",
+                               what="json_tree.type")
+        # XXX where="json_tree.type IS NULL;")
+        print([dict(e) for e in list(entries)])
         # recent_public = tx.db.select("entries",
         #                              where="visibility = public",
         #                              order="desc", limit=20)
         # count = tx.db.select("entries", where="visibility = public",
         #                      what="count(*) as c")[0]["c"]
         # tmpl.entries(recent_public), count)
-        return tmpl.home(post["profile"]["name"])
+        return tmpl.home(myself, entries)
 
     def _post(self):
         name = web.form("name").name
-        tx.db.insert("posts", post={"url": "/me", "published": web.utcnow(),
-                                    "profile": {"name": name, "url": tx.me}})
+        tx.db.insert("entries", entry={"url": "/me",
+                                       "published": web.utcnow(),
+                                       "profile": {"name": name,
+                                                   "url": tx.me}})
 
 
 @app.route(r"\d{{4}}")
