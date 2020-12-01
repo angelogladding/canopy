@@ -23,17 +23,14 @@ class Home:
     """."""
 
     def _get(self):
+        # web.tx.request.uri
+        return tmpl.new(web.tx)
         # recent_public = tx.db.select("entries",
         #                              where="visibility = public",
         #                              order="desc", limit=20)
         # count = tx.db.select("entries", where="visibility = public",
         #                      what="count(*) as c")[0]["c"]
-        print(web.tx)
-        print(dir(web.tx))
-        print(web.tx.request)
-        print(dir(web.tx.request))
-        print(web.tx.request.uri)
-        return tmpl.home(web.tx)  # tmpl.entries(recent_public), count)
+        # return tmpl.home(tmpl.entries(recent_public), count))
 
 
 @app.route(r"\d{{4}}")
