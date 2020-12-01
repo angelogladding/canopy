@@ -1,15 +1,11 @@
-$def with ()
+$def with (name)
 <!doctype html>
 <html>
 <meta name=charset content=utf-8>
 <meta name=generator content=canopy>
 <meta name=viewport content=initial-scale=1.0,user-scalable=no,maximum-scale=1,width=device-width>
-<title>Welcome to the Canopy</title>
+<title>$name</title>
 <body>
-<form method=post>
-<label><big>What is your name?</big><br>
-<input type=text name=name></label>
-<button>Publish</button>
-</form>
+<h1 class=h-card><a class="u-url u-uid p-name" href=/>$name</a></h1>
 </body>
 </html>

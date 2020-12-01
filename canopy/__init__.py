@@ -18,19 +18,39 @@ app.mount(web.websub.sub)
 tmpl = web.templates(__name__)
 
 
+@app.wrap
+def contextualize(handler, app):
+    db = sql.db(f"{tx.request.uri.host}.db")
+    db.define(posts="""post BLOB,
+                       published TEXT AS
+                           (json_extract(post, '$.published')) STORED,
+                       url TEXT AS
+                           (json_extract(post, '$.url')) STORED""")
+    tx.db = db
+
+
 @app.route(r"")
 class Home:
     """."""
 
     def _get(self):
         # web.tx.request.uri
-        return tmpl.new(web.tx)
+        try:
+            name = tx.db.select("posts", where="url = /me")[0]["name"]
+        except IndexError:
+            return tmpl.new(tx)
         # recent_public = tx.db.select("entries",
         #                              where="visibility = public",
         #                              order="desc", limit=20)
         # count = tx.db.select("entries", where="visibility = public",
         #                      what="count(*) as c")[0]["c"]
-        # return tmpl.home(tmpl.entries(recent_public), count))
+        return tmpl.home(name)  # tmpl.entries(recent_public), count))
+
+    def _post(self):
+        name = web.form("name").name
+        post = {"url": "/me", "published": pendulum.now("UTC"),
+                "profile": {"name": name}}
+        tx.db.insert("posts", post=json.dumps(post))
 
 
 @app.route(r"\d{{4}}")
