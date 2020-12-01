@@ -44,8 +44,7 @@ class Home:
             name = tx.db.select("posts", where="url = ?", vals=["/me"])[0]
         except IndexError:
             return tmpl.new()
-        finally:
-            name = name["profile"]["name"]
+        name = name["profile"]["name"]
         # recent_public = tx.db.select("entries",
         #                              where="visibility = public",
         #                              order="desc", limit=20)
