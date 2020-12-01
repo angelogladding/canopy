@@ -27,6 +27,8 @@ def contextualize(handler, app):
                        url TEXT AS
                            (json_extract(post, '$.url')) STORED""")
     tx.db = db
+    yield
+    # TODO wrap template
 
 
 @app.route(r"")
