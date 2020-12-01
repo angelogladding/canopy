@@ -52,7 +52,7 @@ class Home:
         # count = tx.db.select("entries", where="visibility = public",
         #                      what="count(*) as c")[0]["c"]
         # tmpl.entries(recent_public), count)
-        return tmpl.home(myself, entries)
+        return tmpl.home(myself["profile"]["name"], entries)
 
     def _post(self):
         name = web.form("name").name
@@ -60,6 +60,9 @@ class Home:
                                        "published": web.utcnow(),
                                        "profile": {"name": name,
                                                    "url": tx.me}})
+        tx.db.insert("entries", entry={"url": "/2020/12/01/hello-canopy",
+                                       "published": web.utcnow(),
+                                       "name": "Hello Canopy"})
 
 
 @app.route(r"\d{{4}}")
