@@ -46,7 +46,6 @@ class Home:
         entries = tx.db.select("entries, json_tree(entries.entry, '$.name')",
                                what="json_tree.type")
         # XXX where="json_tree.type IS NULL;")
-        print([dict(e) for e in list(entries)])
         # recent_public = tx.db.select("entries",
         #                              where="visibility = public",
         #                              order="desc", limit=20)

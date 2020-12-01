@@ -1,4 +1,4 @@
-$def with (name)
+$def with (name, entries)
 <!doctype html>
 <html>
 <head>
@@ -9,5 +9,7 @@ $def with (name)
 </head>
 <body>
 <h1 class=h-card><a class="u-url u-uid p-name" href=/>$name</a></h1>
+$for entry in entries:
+    <p>$dict(entry)</p>
 </body>
 </html>
