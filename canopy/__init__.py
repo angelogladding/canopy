@@ -29,7 +29,7 @@ def contextualize(handler, app):
                            (json_extract(post, '$.published')) STORED,
                        url TEXT AS
                            (json_extract(post, '$.url')) STORED""")
-    tx.db = db
+    tx.host.db = db
     yield
     # TODO wrap in template
 
