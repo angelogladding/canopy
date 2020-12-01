@@ -26,9 +26,9 @@ def contextualize(handler, app):
     db = sql.db(f"{tx.me}.db")
     db.define(entries="""entry JSON,
                          published TEXT AS
-                             (json_extract(post, '$.published')) STORED,
+                             (json_extract(entry, '$.published')) STORED,
                          url TEXT AS
-                             (json_extract(post, '$.url')) STORED""")
+                             (json_extract(entry, '$.url')) STORED""")
     tx.host.db = db
     yield
     # TODO wrap in template
