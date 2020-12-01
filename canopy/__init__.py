@@ -31,7 +31,6 @@ def contextualize(handler, app):
                              (json_extract(entry, '$.url')) STORED""")
     tx.host.db = db
     yield
-    # TODO wrap in template
 
 
 @app.route(r"")
@@ -44,14 +43,8 @@ class Home:
         except IndexError:
             return tmpl.new()
         entries = tx.db.select("entries, json_tree(entries.entry, '$.name')",
-                               what="json_tree.type")
-        # XXX where="json_tree.type IS NULL;")
-        # recent_public = tx.db.select("entries",
-        #                              where="visibility = public",
-        #                              order="desc", limit=20)
-        # count = tx.db.select("entries", where="visibility = public",
-        #                      what="count(*) as c")[0]["c"]
-        # tmpl.entries(recent_public), count)
+                               where="json_tree.type == 'text'",
+                               order="published desc", limit=20)
         return tmpl.home(myself["profile"]["name"], entries)
 
     def _post(self):
@@ -63,6 +56,7 @@ class Home:
         tx.db.insert("entries", entry={"url": "/2020/12/01/hello-canopy",
                                        "published": web.utcnow(),
                                        "name": "Hello Canopy"})
+        raise web.SeeOther("/")
 
 
 @app.route(r"\d{{4}}")
