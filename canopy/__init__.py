@@ -15,7 +15,7 @@ app.mount(web.webmention.receiver)
 app.mount(web.websub.pub)
 app.mount(web.websub.sub)
 
-tmpl = web.templates()
+tmpl = web.templates("canopy")
 
 
 @app.route(r"")
