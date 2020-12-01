@@ -15,7 +15,7 @@ app.mount(web.webmention.receiver)
 app.mount(web.websub.pub)
 app.mount(web.websub.sub)
 
-# tmpl = web.templates()
+tmpl = web.templates()
 
 
 @app.route(r"")
@@ -28,7 +28,12 @@ class Home:
         #                              order="desc", limit=20)
         # count = tx.db.select("entries", where="visibility = public",
         #                      what="count(*) as c")[0]["c"]
-        return "foobar!"  # tmpl.home(tmpl.entries(recent_public), count)
+        print(web.tx)
+        print(dir(web.tx))
+        print(web.tx.request)
+        print(dir(web.tx.request))
+        print(web.tx.request.uri)
+        return tmpl.home(web.tx)  # tmpl.entries(recent_public), count)
 
 
 @app.route(r"\d{{4}}")
