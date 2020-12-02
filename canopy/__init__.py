@@ -31,10 +31,18 @@ def contextualize(handler, app):
                              (json_extract(entry, '$.url')) STORED""")
     tx.host.db = db
     yield
+
+
+def template(handler, app):
+    """Wrap the response in a template."""
+    yield
     if tx.response.status.startswith("3"):
         pass
     else:
         tx.response.body = tmpl.template(tx.response.body)
+
+
+app.wrap(contextualize, "post")
 
 
 def publish_entry(url, entry):
