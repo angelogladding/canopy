@@ -10,6 +10,8 @@ $def with (name, entries)
 <body>
 <h1 class=h-card><a class="u-url u-uid p-name" href=/>$name</a></h1>
 $for entry in entries:
-    <p>$dict(entry)</p>
+    $ e = entry["entry"]
+    <p class=h-entry><big class=p-name>$e["name"]</big><br><small><a
+    class=u-url href=$e["url"]>$e["published"].diff_for_humans()</a></small></p>
 </body>
 </html>
