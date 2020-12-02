@@ -110,6 +110,6 @@ class Entry:
     """An individual entry."""
 
     def _get(self):
-        path = tx.request.host.uri.path
+        path = tx.request.uri.host.path
         entry = get_entry(path)["entry"]
         return tmpl.entry(entry)
