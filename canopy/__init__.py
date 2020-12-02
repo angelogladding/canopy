@@ -7,7 +7,6 @@ from web import tx
 
 app = web.application("Canopy")
 app.mount(web.indieauth.server)
-# app.wrap(web.indieauth.insert_references)  # XXX move to mount subapp
 app.mount(web.micropub.server)
 app.mount(web.microsub.reader)
 app.mount(web.microsub.server)
@@ -42,7 +41,8 @@ def template(handler, app):
 
 
 app.wrap(template, "post")
-app.wrap(web.webmention.insert_references, "post")  # XXX move to mount subapp
+app.wrap(web.indieauth.insert_references, "post")
+app.wrap(web.webmention.insert_references, "post")
 
 
 def publish_entry(url, entry):
