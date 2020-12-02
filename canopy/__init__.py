@@ -37,7 +37,7 @@ def publish_entry(url, entry):
     """Publish an entry and return its permalink."""
     now = web.utcnow()
     url = url.format(dtslug=web.timeslug(now),
-                     nameslug=web.tetxslug(entry.get("name")))
+                     nameslug=web.textslug(entry.get("name")))
     tx.db.insert("entries", entry=dict(**entry, published=now, url=url))
     return url
 
