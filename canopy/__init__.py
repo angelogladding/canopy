@@ -11,7 +11,6 @@ app.mount(web.indieauth.server)
 app.mount(web.micropub.server)
 app.mount(web.microsub.reader)
 app.mount(web.microsub.server)
-app.wrap(web.webmention.insert_references, "post")  # XXX move to mount subapp
 app.mount(web.webmention.receiver)
 app.mount(web.websub.pub)
 app.mount(web.websub.sub)
@@ -43,6 +42,7 @@ def template(handler, app):
 
 
 app.wrap(template, "post")
+app.wrap(web.webmention.insert_references, "post")  # XXX move to mount subapp
 
 
 def publish_entry(url, entry):
