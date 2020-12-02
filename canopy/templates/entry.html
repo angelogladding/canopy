@@ -1,6 +1,8 @@
 $def with (entry)
 $var title: $entry["name"]
 
-<p><big>$entry["name"]</big></p>
-
-<pre>$pformat(entry)</pre>
+<article class=h-entry>
+<p><big class=p-name>$entry["name"]</big></p>
+$ a = entry["author"]
+<p class="p-author h-card"><a class=u-url href=$a["url"]>$a["name"]</a></p>
+</article>
