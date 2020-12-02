@@ -56,7 +56,7 @@ def dump_entry(url, entry):
     url = url.format(dtslug=web.timeslug(now),
                      nameslug=web.textslug(entry.get("name", "")))
     tx.db.insert("entries", entry=dict(**entry, published=now, url=url,
-                                       author=load_entry("me")["entry"]))
+                                       author=load_entry("about")["entry"]))
     return url
 
 
@@ -66,7 +66,7 @@ class Home:
 
     def _get(self):
         try:
-            myself = load_entry("me")["entry"]
+            myself = load_entry("about")["entry"]
         except IndexError:
             return tmpl.new()
         entries = tx.db.select("entries, json_tree(entries.entry, '$.name')",
@@ -86,7 +86,7 @@ class About:
     """."""
 
     def _get(self):
-        myself = load_entry("me")["entry"]
+        myself = load_entry("about")["entry"]
         return tmpl.about(myself["profile"])
 
 
