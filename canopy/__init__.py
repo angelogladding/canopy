@@ -42,7 +42,7 @@ def template(handler, app):
         tx.response.body = tmpl.template(tx.response.body)
 
 
-app.wrap(contextualize, "post")
+app.wrap(template, "post")
 
 
 def publish_entry(url, entry):
