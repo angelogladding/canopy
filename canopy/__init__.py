@@ -55,8 +55,12 @@ def dump_entry(url, entry):
     now = web.utcnow()
     url = url.format(dtslug=web.timeslug(now),
                      nameslug=web.textslug(entry.get("name", "")))
+    try:
+        author = load_entry("about")["entry"]
+    except IndexError:  # TODO handle first post
+        author = entry["profile"]
     tx.db.insert("entries", entry=dict(**entry, published=now, url=url,
-                                       author=load_entry("about")["entry"]))
+                                       author=author))
     return url
 
 
