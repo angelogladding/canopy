@@ -31,6 +31,10 @@ def contextualize(handler, app):
                              (json_extract(entry, '$.url')) STORED""")
     tx.host.db = db
     yield
+    if tx.response.status.startswith("3"):
+        pass
+    else:
+        tx.response.body = tmpl.template(tx.response.body)
 
 
 def publish_entry(url, entry):
@@ -58,9 +62,18 @@ class Home:
 
     def _post(self):
         name = web.form("name").name
-        publish_entry("/me", {"profile": {"name": name, "url": tx.me}})
+        publish_entry("/about", {"profile": {"name": name, "url": tx.me}})
         publish_entry("/{dtslug}/{nameslug}", {"name": "Hello world!"})
         raise web.SeeOther("/")
+
+
+@app.route(r"about")
+class About:
+    """."""
+
+    def _get(self):
+        myself = tx.db.select("entries", where="url = '/me'")[0]["entry"]
+        return tmpl.about(myself["profile"])
 
 
 @app.route(r"\d{{4}}")

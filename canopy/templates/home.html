@@ -1,17 +1,7 @@
 $def with (name, entries)
-<!doctype html>
-<html>
-<head>
-<meta name=charset content=utf-8>
-<meta name=generator content=canopy>
-<meta name=viewport content=initial-scale=1.0,user-scalable=no,maximum-scale=1,width=device-width>
-<title>$name</title>
-</head>
-<body>
+$var title: $name
 <h1 class=h-card><a class="u-url u-uid p-name" href=/>$name</a></h1>
 $for entry in entries:
     $ e = entry["entry"]
     <p class=h-entry><big class=p-name>$e["name"]</big><br><small><a
     class=u-url href=$e["url"]>$e["published"].diff_for_humans()</a></small></p>
-</body>
-</html>
