@@ -55,8 +55,8 @@ def dump_entry(url, entry):
     now = web.utcnow()
     url = url.format(dtslug=web.timeslug(now),
                      nameslug=web.textslug(entry.get("name", "")))
-    tx.db.insert("entries", entry=dict(**entry, author=load_entry("me"),
-                                       published=now, url=url))
+    tx.db.insert("entries", entry=dict(**entry, published=now, url=url,
+                                       author=load_entry("me")["entry"])
     return url
 
 
