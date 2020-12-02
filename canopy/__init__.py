@@ -47,7 +47,7 @@ app.wrap(web.webmention.insert_references, "post")
 
 def load_entry(url):
     """Read an entry and return it with its metadata."""
-    return tx.db.select("entries", where="url = ?", vals=[f"/{url}"])[0]
+    return tx.db.select("entries", where="url = ?", vals=[url])[0]
 
 
 def dump_entry(url, entry):
@@ -76,8 +76,8 @@ class Home:
 
     def _post(self):
         name = web.form("name").name
-        dump_entry("/about", {"profile": {"name": name, "url": tx.me}})
-        dump_entry("/{dtslug}/{nameslug}", {"name": "Hello world!"})
+        dump_entry("about", {"profile": {"name": name, "url": tx.me}})
+        dump_entry("{dtslug}/{nameslug}", {"name": "Hello world!"})
         raise web.SeeOther("/")
 
 
