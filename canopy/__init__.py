@@ -105,7 +105,7 @@ class ArchiveMonth:
         return tx.request.uri  # tmpl.archive.month()
 
 
-@app.route(r"\d{{4}}/\d{{,2}}/\d{{,2}}/[a-zA-Z0-9]{{1,4}}/(.*)")
+@app.route(r"\d{{4}}/\d{{2}}/\d{{2}}/[a-zA-Z0-9]{{1,4}}/.*")
 class Entry:
     """An individual entry."""
 
