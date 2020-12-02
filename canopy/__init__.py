@@ -45,17 +45,18 @@ app.wrap(web.indieauth.insert_references, "post")
 app.wrap(web.webmention.insert_references, "post")
 
 
-def get_entry(url):
-    """"""
+def load_entry(url):
+    """Read an entry and return it with its metadata."""
     return tx.db.select("entries", where="url = ?", vals=[f"/{url}"])[0]
 
 
-def publish_entry(url, entry):
-    """Publish an entry and return its permalink."""
+def dump_entry(url, entry):
+    """Write an entry and return its permalink."""
     now = web.utcnow()
     url = url.format(dtslug=web.timeslug(now),
                      nameslug=web.textslug(entry.get("name", "")))
-    tx.db.insert("entries", entry=dict(**entry, published=now, url=url))
+    tx.db.insert("entries", entry=dict(**entry, author=load_entry("me"),
+                                       published=now, url=url))
     return url
 
 
@@ -65,7 +66,7 @@ class Home:
 
     def _get(self):
         try:
-            myself = get_entry("me")["entry"]
+            myself = load_entry("me")["entry"]
         except IndexError:
             return tmpl.new()
         entries = tx.db.select("entries, json_tree(entries.entry, '$.name')",
@@ -75,8 +76,8 @@ class Home:
 
     def _post(self):
         name = web.form("name").name
-        publish_entry("/about", {"profile": {"name": name, "url": tx.me}})
-        publish_entry("/{dtslug}/{nameslug}", {"name": "Hello world!"})
+        dump_entry("/about", {"profile": {"name": name, "url": tx.me}})
+        dump_entry("/{dtslug}/{nameslug}", {"name": "Hello world!"})
         raise web.SeeOther("/")
 
 
@@ -85,7 +86,7 @@ class About:
     """."""
 
     def _get(self):
-        myself = get_entry("me")["entry"]
+        myself = load_entry("me")["entry"]
         return tmpl.about(myself["profile"])
 
 
@@ -110,5 +111,5 @@ class Entry:
     """An individual entry."""
 
     def _get(self):
-        entry = get_entry(tx.request.uri.path)["entry"]
+        entry = load_entry(tx.request.uri.path)["entry"]
         return tmpl.entry(entry)
