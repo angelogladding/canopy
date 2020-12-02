@@ -6,15 +6,15 @@ from web import tx
 
 
 app = web.application("Canopy")
-# app.mount(web.indieauth.server)
+app.mount(web.indieauth.server)
 # app.wrap(web.indieauth.insert_references)  # XXX move to mount subapp
-# app.mount(web.micropub.server)
-# app.mount(web.microsub.reader)
-# app.mount(web.microsub.server)
-# app.wrap(web.webmention.insert_references)  # XXX move to mount subapp
-# app.mount(web.webmention.receiver)
-# app.mount(web.websub.pub)
-# app.mount(web.websub.sub)
+app.mount(web.micropub.server)
+app.mount(web.microsub.reader)
+app.mount(web.microsub.server)
+app.wrap(web.webmention.insert_references)  # XXX move to mount subapp
+app.mount(web.webmention.receiver)
+app.mount(web.websub.pub)
+app.mount(web.websub.sub)
 
 tmpl = web.templates(__name__)
 
