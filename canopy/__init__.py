@@ -33,6 +33,15 @@ def contextualize(handler, app):
     yield
 
 
+def publish_entry(url, entry):
+    """Publish an entry and return its permalink."""
+    now = web.utcnow()
+    url = url.format(dtslug=web.timeslug(now),
+                     nameslug=web.tetxslug(entry.get("name")))
+    tx.db.insert("entries", entry=dict(**entry, published=now, url=url))
+    return url
+
+
 @app.route(r"")
 class Home:
     """."""
@@ -49,13 +58,8 @@ class Home:
 
     def _post(self):
         name = web.form("name").name
-        tx.db.insert("entries", entry={"url": "/me",
-                                       "published": web.utcnow(),
-                                       "profile": {"name": name,
-                                                   "url": tx.me}})
-        tx.db.insert("entries", entry={"url": "/2020/12/01/hello-canopy",
-                                       "published": web.utcnow(),
-                                       "name": "Hello Canopy"})
+        publish_entry("/me", {"profile": {"name": name, "url": tx.me}})
+        publish_entry("/{{dtslug}}/{{nameslug}}", {"name": "Hello world!"})
         raise web.SeeOther("/")
 
 
