@@ -45,6 +45,11 @@ app.wrap(web.indieauth.insert_references, "post")
 app.wrap(web.webmention.insert_references, "post")
 
 
+def get_entry(url):
+    """"""
+    return tx.db.select("entries", where="url = ?", vals=[f"/{url}"])[0]
+
+
 def publish_entry(url, entry):
     """Publish an entry and return its permalink."""
     now = web.utcnow()
@@ -60,7 +65,7 @@ class Home:
 
     def _get(self):
         try:
-            myself = tx.db.select("entries", where="url = '/me'")[0]["entry"]
+            myself = get_entry("me")["entry"]
         except IndexError:
             return tmpl.new()
         entries = tx.db.select("entries, json_tree(entries.entry, '$.name')",
@@ -80,13 +85,13 @@ class About:
     """."""
 
     def _get(self):
-        myself = tx.db.select("entries", where="url = '/me'")[0]["entry"]
+        myself = get_entry("me")["entry"]
         return tmpl.about(myself["profile"])
 
 
 @app.route(r"\d{{4}}")
 class ArchiveYear:
-    """Posts from given year."""
+    """Entries from given year."""
 
     def _get(self):
         return tx.request.uri  # tmpl.archive.year()
@@ -94,7 +99,17 @@ class ArchiveYear:
 
 @app.route(r"\d{{4}}/\d{{,2}}")
 class ArchiveMonth:
-    """Posts from given month."""
+    """Entries from given month."""
 
     def _get(self):
         return tx.request.uri  # tmpl.archive.month()
+
+
+@app.route(r"\d{{4}}/\d{{,2}}/\d{{,2}}/\d{{1,4}}/(.*)")
+class Entry:
+    """An individual entry."""
+
+    def _get(self):
+        path = tx.request.host.uri.path
+        entry = get_entry(path)["entry"]
+        return tmpl.entry(entry)
