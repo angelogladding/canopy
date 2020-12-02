@@ -59,7 +59,7 @@ class Home:
     def _post(self):
         name = web.form("name").name
         publish_entry("/me", {"profile": {"name": name, "url": tx.me}})
-        publish_entry("/{{dtslug}}/{{nameslug}}", {"name": "Hello world!"})
+        publish_entry("/{dtslug}/{nameslug}", {"name": "Hello world!"})
         raise web.SeeOther("/")
 
 
