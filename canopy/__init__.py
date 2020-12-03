@@ -79,7 +79,6 @@ class Home:
     """."""
 
     def _get(self):
-        print(tx.user.session["foobar"])
         try:
             myself = load_entry("about")["entry"]
         except IndexError:
@@ -159,5 +158,5 @@ class SignIn:
 
     def _post(self):
         passphrase = web.form("passphrase").passphrase
-        tx.user.session["foobar"] = passphrase
+        print(passphrase)
         raise web.SeeOther("/")

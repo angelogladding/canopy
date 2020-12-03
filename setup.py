@@ -20,6 +20,6 @@
 
 from setuptools import setup
 
-setup(requires=["web"],
+setup(requires=["cryptography", "scrypt", "web"],
       provides={"web.apps": ["canopy = canopy:app"]},
       discover=__file__)
