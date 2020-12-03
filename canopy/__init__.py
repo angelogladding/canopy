@@ -1,5 +1,10 @@
 """A full-stack IndieWeb client."""
 
+import hmac
+import random
+
+import Crypto.Random
+import scrypt
 import sql
 import web
 from web import tx
@@ -27,7 +32,10 @@ def contextualize(handler, app):
                          published TEXT AS
                              (json_extract(entry, '$.published')) STORED,
                          url TEXT AS
-                             (json_extract(entry, '$.url')) STORED""")
+                             (json_extract(entry, '$.url')) STORED""",
+              credentials="""created DATETIME NOT NULL
+                                 DEFAULT CURRENT_TIMESTAMP,
+                             salt BLOB, scrypt_hash BLOB""")
     tx.host.db = db
     yield
 
@@ -62,6 +70,7 @@ def dump_entry(url, entry):
         author = entry["profile"]
     tx.db.insert("entries", entry=dict(**entry, published=now, url=url,
                                        author=author))
+    # TODO tx.db.snapshot()
     return url
 
 
@@ -70,6 +79,7 @@ class Home:
     """."""
 
     def _get(self):
+        print(tx.user.session["foobar"])
         try:
             myself = load_entry("about")["entry"]
         except IndexError:
@@ -83,7 +93,27 @@ class Home:
         name = web.form("name").name
         dump_entry("about", {"profile": {"name": name, "url": tx.me}})
         dump_entry("{dtslug}/{nameslug}", {"name": "Hello world!"})
-        raise web.SeeOther("/")
+        return tmpl.welcome(reset_passphrase())
+
+
+def reset_passphrase():
+    """Set a new randomly-generated passphrase and return it."""
+    passphrase_words = set()
+    while len(passphrase_words) < 7:
+        passphrase_words.add(random.choice(web.wordlist))
+    passphrase = "".join(passphrase_words)
+    salt = Crypto.Random.get_random_bytes(64)
+    scrypt_hash = scrypt.hash(passphrase, salt)
+    tx.insert("credentials", salt=salt, scrypt_hash=scrypt_hash)
+    # TODO tx.db.snapshot()
+    return passphrase
+
+
+def verify_passphrase(passphrase):
+    """Verify given passphrase."""
+    credentials = tx.db.select("credentials", order="created DESC")[0]
+    scrypt_hash = scrypt.hash(passphrase, credentials["salt"])
+    return hmac.compare_digest(scrypt_hash, credentials["scrypt_hash"])
 
 
 @app.route(r"about")
@@ -118,3 +148,16 @@ class Entry:
     def _get(self):
         entry = load_entry(tx.request.uri.path)["entry"]
         return tmpl.entry(entry)
+
+
+@app.route(r"sign-in")
+class SignIn:
+    """Sign in as the owner of the site."""
+
+    def _get(self):
+        return tmpl.sign_in()
+
+    def _post(self):
+        passphrase = web.form("passphrase").passphrase
+        tx.user.session["foobar"] = passphrase
+        raise web.SeeOther("/")
