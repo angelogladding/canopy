@@ -158,5 +158,6 @@ class SignIn:
 
     def _post(self):
         passphrase = web.form("passphrase").passphrase
+        tx.user.session["baz"] = "foo"
         print(passphrase)
         raise web.SeeOther("/")
