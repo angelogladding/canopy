@@ -5,7 +5,8 @@ import web
 from web import tx
 
 
-app = web.application("Canopy")
+app = web.application("Canopy", year=r"\d{4}", month=r"\d{2}", day=r"\d{2}",
+                      seconds=web.nb60_re + r"{,4}", slug=r"[\w_]+")
 app.mount(web.indieauth.server)
 app.mount(web.micropub.server)
 app.mount(web.microsub.reader)
@@ -110,7 +111,7 @@ class ArchiveMonth:
         return tx.request.uri  # tmpl.archive.month()
 
 
-@app.route(r".*")
+@app.route(r"{year}/{month}/{day}/{seconds}(/{slug})?")
 class Entry:
     """An individual entry."""
 
