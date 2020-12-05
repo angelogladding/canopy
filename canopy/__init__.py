@@ -51,6 +51,13 @@ app.wrap(template, "post")
 app.wrap(web.indieauth.insert_references, "post")
 app.wrap(web.webmention.insert_references, "post")
 
+link_headers = {"authorization_endpoint": "sign-in",
+                "token_endpoint": "token",
+                "webmention": "mentions",
+                "micropub": "micropub",
+                "hub": "hub",
+                "self": ""}
+
 
 def load_entry(url):
     """Read an entry and return it with its metadata."""
@@ -76,7 +83,12 @@ def dump_entry(url, entry):
 class Home:
     """."""
 
+    def _head(self):
+        self.emit_headers()
+        return ""
+
     def _get(self):
+        self.emit_headers()
         try:
             myself = load_entry("about")["entry"]
         except IndexError:
@@ -85,6 +97,10 @@ class Home:
                                where="json_tree.type == 'text'",
                                order="published desc", limit=20)
         return tmpl.home(myself["profile"]["name"], entries)
+
+    def emit_headers(self):
+        for rel, path in link_headers.items():
+            web.header("Link", f'<{tx.origin}/{path}>;rel="{rel}"', add=True)
 
     def _post(self):
         name = web.form("name").name
