@@ -43,9 +43,7 @@ def contextualize(handler, app):
 def template(handler, app):
     """Wrap the response in a template."""
     yield
-    if tx.response.status.startswith("3"):
-        pass
-    else:
+    if tx.response.headers.content_type == "text/html":
         tx.response.body = tmpl.template(tx.response.body)
 
 
