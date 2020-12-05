@@ -102,7 +102,8 @@ class Home:
     def emit_headers(self):
         """Emit homepage headers for HEAD and GET."""
         for rel, path in link_headers.items():
-            web.header("Link", f'<{tx.origin}/{path}>;rel="{rel}"', add=True)
+            web.header("Link", f'https://<{tx.request.uri.host}/{path}>;'
+                       'rel="{rel}"', add=True)
 
     def _post(self):
         name = web.form("name").name
