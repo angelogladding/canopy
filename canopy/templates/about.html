@@ -1,13 +1,23 @@
 $def with (profile)
 $var title: About Me
 
+<ul>\
+$for url in profile.get("urls", []):
+    <li>\
+    $if url.startswith("twitter.com/"):
+        <a href=//$url>Twitter</a>
+    $if url.startswith("github.com/"):
+        <a href=//$url>GitHub</a>
+    </li>
+</ul>
+
 <pre>$profile</pre>
 
 $if tx.is_owner:
     <form method=post>
     <label>Name<br>
-    <input type=text name=profile["name"]></label>
+    <input type=text name=name value="$profile['name']"></label>
     <label>Profiles Elsewhere (eg. twitter.com/.., github.com/..)<br>
-    <textarea></textarea></label>
+    <textarea>$"\n".join(profile["urls"])</textarea></label>
     <button>Save</button>
     </form>
