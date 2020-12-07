@@ -18,6 +18,6 @@ $if tx.is_owner:
     <label>Name<br>
     <input type=text name=name value="$profile['name']"></label>
     <label>Profiles Elsewhere (eg. twitter.com/.., github.com/..)<br>
-    <textarea>$"\n".join(profile["urls"])</textarea></label>
+    <textarea>$"\n".join(profile.get("urls", []))</textarea></label>
     <button>Save</button>
     </form>
