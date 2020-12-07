@@ -19,14 +19,14 @@ app.mount(web.microsub.server)
 app.mount(web.webmention.receiver)
 app.mount(web.websub.pub)
 app.mount(web.websub.sub)
-tmpl = web.templates(__name__, globals={"tx": tx})
+tmpl = web.templates(__name__)
 
 
 @app.wrap
 def contextualize(handler, app):
     """Contextualize this thread based upon the host of the request."""
-    tx.me = tx.request.uri.host
-    db = sql.db(f"{tx.me}.db")
+    tx.owner = tx.request.uri.host
+    db = sql.db(f"{tx.owner}.db")
     db.define(entries="""entry JSON,
                          published TEXT AS
                              (json_extract(entry, '$.published')) STORED,
@@ -90,13 +90,13 @@ class Home:
     def _get(self):
         self.emit_headers()
         try:
-            myself = load_entry("about")["entry"]
+            owner = load_entry("about")["entry"]
         except IndexError:
             return tmpl.new()
         entries = tx.db.select("entries, json_tree(entries.entry, '$.name')",
                                where="json_tree.type == 'text'",
                                order="published desc", limit=20)
-        return tmpl.home(myself["profile"]["name"], entries)
+        return tmpl.home(owner["profile"]["name"], entries)
 
     def emit_headers(self):
         """Emit homepage headers for HEAD and GET."""
@@ -106,7 +106,7 @@ class Home:
 
     def _post(self):
         name = web.form("name").name
-        dump_entry("about", {"profile": {"name": name, "url": tx.me}})
+        dump_entry("about", {"profile": {"name": name, "url": tx.owner}})
         dump_entry("{dtslug}/{nameslug}", {"name": "Hello world!"})
         return tmpl.welcome(reset_passphrase())
 
@@ -136,8 +136,8 @@ class About:
     """."""
 
     def _get(self):
-        myself = load_entry("about")["entry"]
-        return tmpl.about(myself["profile"])
+        owner = load_entry("about")["entry"]
+        return tmpl.about(owner["profile"])
 
 
 @app.route(r"\d{{4}}")
@@ -174,6 +174,6 @@ class SignIn:
 
     def _post(self):
         passphrase = web.form("passphrase").passphrase
-        tx.user.session["baz"] = "foo"
         print(passphrase)
+        tx.user.session["me"] = tx.owner  # TODO FIXME !
         raise web.SeeOther("/")
