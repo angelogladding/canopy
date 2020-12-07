@@ -71,7 +71,7 @@ def dump_entry(url, entry):
                      nameslug=web.textslug(entry.get("name", "")))
     try:
         author = load_entry("about")["entry"]["profile"]
-    except IndexError:  # TODO handle first post
+    except IndexError:  # TODO bootstrap first post with first post
         author = entry["profile"]
     tx.db.insert("entries", entry=dict(**entry, published=now, url=url,
                                        author=author))
@@ -106,7 +106,7 @@ class Home:
 
     def _post(self):
         name = web.form("name").name
-        dump_entry("about", {"profile": {"name": name, "url": tx.owner}})
+        dump_entry("about", {"profile": {"name": name, "uid": tx.owner}})
         dump_entry("{dtslug}/{nameslug}", {"name": "Hello world!"})
         return tmpl.welcome(reset_passphrase())
 
