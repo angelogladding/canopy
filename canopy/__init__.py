@@ -60,7 +60,8 @@ link_headers = {"authorization_endpoint": "sign-in",
 
 def load_entry(url):
     """Read an entry and return it with its metadata."""
-    return tx.db.select("entries", where="url = ?", vals=[url])[0]
+    return tx.db.select("entries", where="url = ?", vals=[url],
+                        order="published DESC", limit=1)[0]
 
 
 def dump_entry(url, entry):
@@ -140,7 +141,7 @@ class About:
 
     def _post(self):
         profile = web.form()
-        profile["urls"] = profile["urls"].split("\n")
+        profile["urls"] = profile["urls"].splitlines()
         print(profile)
         dump_entry("about", {"profile": profile})
         raise web.SeeOther("/about")
