@@ -21,7 +21,7 @@ $if tx.is_owner:
     <label>Name<br>
     <input type=text name=name value="$profile['name']"></label>
     <label>Primary Identity<br>
-    <input type=text name=name value="$profile['uid']"></label>
+    <input type=text name=uid></label>
     <label>Identities Elsewhere (eg. twitter.com/.., github.com/..)<br>
     <textarea name=urls>$"\n".join(profile.get("urls", []))</textarea></label>
     <button>Save</button>
