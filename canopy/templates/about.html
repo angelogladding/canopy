@@ -2,3 +2,12 @@ $def with (profile)
 $var title: About Me
 
 <pre>$profile</pre>
+
+$if tx.is_owner:
+    <form method=post>
+    <label>Name<br>
+    <input type=text name=profile["name"]></label>
+    <label>Profiles Elsewhere (eg. twitter.com/.., github.com/..)<br>
+    <textarea></textarea></label>
+    <button>Save</button>
+    </form>

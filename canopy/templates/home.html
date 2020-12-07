@@ -7,5 +7,5 @@ $for entry in entries:
     <p class=h-entry><big class=p-name>$e["name"]</big><br><small><a
     class=u-url href=$e["url"]>$e["published"].diff_for_humans()</a></small></p>
 
-<p>$tx.owner</p>
-<p>$tx.user.session</p>
+$if tx.is_owner:
+    <p>Hello $name &mdash; <a href=/about>update your profile</a></p>

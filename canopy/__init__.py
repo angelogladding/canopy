@@ -25,7 +25,6 @@ tmpl = web.templates(__name__)
 @app.wrap
 def contextualize(handler, app):
     """Contextualize this thread based upon the host of the request."""
-    # tx.host.owner = tx.request.uri.host
     db = sql.db(f"{tx.owner}.db")
     db.define(entries="""entry JSON,
                          published TEXT AS
@@ -138,6 +137,10 @@ class About:
     def _get(self):
         owner = load_entry("about")["entry"]
         return tmpl.about(owner["profile"])
+
+    def _post(self):
+        dump_entry("about", {"profile": web.form()})
+        raise web.SeeOther("/about")
 
 
 @app.route(r"\d{{4}}")
