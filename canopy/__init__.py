@@ -12,7 +12,14 @@ from web import tx
 
 app = web.application("Canopy", year=r"\d{4}", month=r"\d{2}", day=r"\d{2}",
                       seconds=web.nb60_re + r"{,4}", slug=r"[\w_]+")
-tmpl = web.templates(__name__)
+app.mount(web.indieauth.server)
+app.mount(web.micropub.server)
+app.mount(web.microsub.reader)
+app.mount(web.microsub.server)
+app.mount(web.webmention.receiver)
+app.mount(web.websub.pub)
+app.mount(web.websub.sub)
+tmpl = web.templates(__name__, globals={"tx": tx})
 
 
 @app.wrap
@@ -40,16 +47,8 @@ def template(handler, app):
         tx.response.body = tmpl.template(tx.response.body)
 
 
-# app.wrap(template, "post")
 app.wrap(web.indieauth.insert_references, "post")
 app.wrap(web.webmention.insert_references, "post")
-app.mount(web.indieauth.server)
-app.mount(web.micropub.server)
-app.mount(web.microsub.reader)
-app.mount(web.microsub.server)
-app.mount(web.webmention.receiver)
-app.mount(web.websub.pub)
-app.mount(web.websub.sub)
 
 
 link_headers = {"authorization_endpoint": "sign-in",
