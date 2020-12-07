@@ -141,6 +141,7 @@ class About:
     def _post(self):
         profile = web.form()
         profile["urls"] = profile["urls"].split("\n")
+        print(profile)
         dump_entry("about", {"profile": profile})
         raise web.SeeOther("/about")
 
