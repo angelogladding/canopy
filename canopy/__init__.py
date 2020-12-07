@@ -139,7 +139,9 @@ class About:
         return tmpl.about(owner["profile"])
 
     def _post(self):
-        dump_entry("about", {"profile": web.form()})
+        profile = web.form()
+        profile["urls"] = profile["urls"].split("\n")
+        dump_entry("about", {"profile": profile})
         raise web.SeeOther("/about")
 
 
