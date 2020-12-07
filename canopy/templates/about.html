@@ -2,7 +2,7 @@ $def with (profile)
 $var title: About Me
 
 <h1>$profile["name"]</h1>
-$# <p>$profile["uid"]</p>
+<p><a href=//$profile["uid"]>$profile["uid"]</a></p>
 
 <ul>\
 $for url in profile.get("urls", []):
@@ -18,11 +18,11 @@ $for url in profile.get("urls", []):
 
 $if tx.is_owner:
     <form method=post>
-    <label>Name<br>
-    <input type=text name=name value="$profile['name']"></label>
-    <label>Primary Identity<br>
-    <input type=text name=uid></label>
-    <label>Identities Elsewhere (eg. twitter.com/.., github.com/..)<br>
-    <textarea name=urls>$"\n".join(profile.get("urls", []))</textarea></label>
+    <div><label>Name<br>
+    <input type=text name=name value="$profile['name']"></label></div>
+    <div><label>Primary Identity<br>
+    <input type=text name=uid value="profile['uid']"></label></div>
+    <div><label>Identities Elsewhere (eg. twitter.com/.., github.com/..)<br>
+    <textarea name=urls>$"\n".join(profile.get("urls", []))</textarea></label></div>
     <button>Save</button>
     </form>
