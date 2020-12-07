@@ -25,7 +25,7 @@ tmpl = web.templates(__name__)
 @app.wrap
 def contextualize(handler, app):
     """Contextualize this thread based upon the host of the request."""
-    tx.owner = tx.request.uri.host
+    # tx.owner = tx.request.uri.host
     db = sql.db(f"{tx.owner}.db")
     db.define(entries="""entry JSON,
                          published TEXT AS
