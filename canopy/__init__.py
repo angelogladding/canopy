@@ -84,7 +84,7 @@ def reset_passphrase():
     passphrase = "".join(passphrase_words)
     salt = Crypto.Random.get_random_bytes(64)
     scrypt_hash = scrypt.hash(passphrase, salt)
-    tx.insert("credentials", salt=salt, scrypt_hash=scrypt_hash)
+    tx.db.insert("credentials", salt=salt, scrypt_hash=scrypt_hash)
     # TODO tx.db.snapshot()
     return passphrase
 
