@@ -1,4 +1,4 @@
-$def with (passphrase)
+$def with (passphrase_words)
 $var title: Welcome
 
-<p>$passphrase</p>
+<p>$" ".join(passphrase_words)</p>

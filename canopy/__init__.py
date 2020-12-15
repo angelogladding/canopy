@@ -86,7 +86,7 @@ def reset_passphrase():
     scrypt_hash = scrypt.hash(passphrase, salt)
     tx.db.insert("credentials", salt=salt, scrypt_hash=scrypt_hash)
     # TODO tx.db.snapshot()
-    return passphrase
+    return passphrase_words
 
 
 def verify_passphrase(passphrase):
