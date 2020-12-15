@@ -1,11 +1,12 @@
-$def with (name, entries)
+$def with (name, resources)
 $var title: $name
 
 <h1 class=h-card><a class="u-url u-uid p-name" href=/>$name</a></h1>
-$for entry in entries:
-    $ e = entry["entry"]
-    <p class=h-entry><big class=p-name>$e["name"]</big><br><small><a
-    class=u-url href=$e["url"]>$e["published"].diff_for_humans()</a></small></p>
+$for resource in resources:
+    $ r = resource["resource"]
+    <p>$r</p>
+    <p class=h-entry><big class=p-name>$r["name"]</big><br><small><a
+    class=u-url href=$r["url"]>$r["published"].diff_for_humans()</a></small></p>
 
 $if tx.is_owner:
     <p>Hello $name &mdash; <a href=/about>update your profile</a></p>
