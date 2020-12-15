@@ -129,14 +129,22 @@ class ArchiveMonth:
         return tx.request.uri  # tmpl.archive.month()
 
 
+@app.route(r"{year}/{month}/{day}")
+class ArchiveDay:
+    """Resources from given day."""
+
+    def _get(self):
+        return tx.request.uri  # tmpl.archive.day()
+
+
 # TODO note/article/..
 @app.route(r"{year}/{month}/{day}/{seconds}(/{slug})?")
-class Resource:
-    """An individual resource."""
+class Entry:
+    """An individual entry."""
 
     def _get(self):
         resource = load_resource(tx.request.uri.path)["resource"]
-        return tmpl.resource(resource)
+        return tmpl.entry(resource)
 
 
 # @app.route(r"network")
