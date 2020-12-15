@@ -142,6 +142,8 @@ class ArchiveDay:
 class Entry:
     """An individual entry."""
 
+    mentionable = True
+
     def _get(self):
         resource = load_resource(tx.request.uri.path)["resource"]
         return tmpl.entry(resource)
