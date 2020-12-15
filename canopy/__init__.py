@@ -12,69 +12,42 @@ from web import tx
 
 app = web.application("Canopy", year=r"\d{4}", month=r"\d{2}", day=r"\d{2}",
                       seconds=web.nb60_re + r"{,4}", slug=r"[\w_]+")
-app.mount(web.indieauth.server)
-app.mount(web.micropub.server)
-app.mount(web.microsub.reader)
-app.mount(web.microsub.server)
-app.mount(web.webmention.receiver)
-app.mount(web.websub.pub)
-app.mount(web.websub.sub)
 tmpl = web.templates(__name__)
 
 
-@app.wrap
-def contextualize(handler, app):
-    """Contextualize this thread based upon the host of the request."""
-    db = sql.db(f"{tx.owner}.db")
-    db.define(entries="""entry JSON,
-                         published TEXT AS
-                             (json_extract(entry, '$.published')) STORED,
-                         url TEXT AS
-                             (json_extract(entry, '$.url')) STORED""",
-              credentials="""created DATETIME NOT NULL
-                                 DEFAULT CURRENT_TIMESTAMP,
-                             salt BLOB, scrypt_hash BLOB""")
-    tx.host.db = db
-    yield
+# TODO load_entry -> load_resource
+# {"url": .., "published": ..}
+
+# {"h": "feed", "url": ..}
+# {"h": "entry", "url": ..}
+# note, article, reply, repost, bookmark, like, rsvp, read
+
+# {"card": {"uid": ..}}
+# contact
+
+# {"event": {"url": ..}}
+# {"review": {"url": ..}}
+# {"recipe": {"url": ..}}
+# {"": {"url": ..}}
 
 
-@app.wrap
-def template(handler, app):
-    """Wrap the response in a template."""
-    yield
-    if tx.response.headers.content_type == "text/html":
-        tx.response.body = tmpl.template(tx.response.body)
-
-
-app.wrap(web.indieauth.insert_references, "post")
-app.wrap(web.webmention.insert_references, "post")
-
-
-link_headers = {"authorization_endpoint": "sign-in",
-                "token_endpoint": "token",
-                "webmention": "mentions",
-                "micropub": "micropub",
-                "hub": "hub",
-                "self": ""}
-
-
-def load_entry(url):
-    """Read an entry and return it with its metadata."""
-    return tx.db.select("entries", where="url = ?", vals=[url],
+def load_resource(url):
+    """Read a resource and return it with its metadata."""
+    return tx.db.select("resources", where="url = ?", vals=[url],
                         order="published DESC", limit=1)[0]
 
 
-def dump_entry(url, entry):
-    """Write an entry and return its permalink."""
+def dump_resource(url, resource):
+    """Write a resource and return its permalink."""
     now = web.utcnow()
     url = url.format(dtslug=web.timeslug(now),
-                     nameslug=web.textslug(entry.get("name", "")))
+                     nameslug=web.textslug(resource.get("name", "")))
     try:
-        author = load_entry("about")["entry"]["profile"]
+        author = load_resource("about")["resource"]["profile"]
     except IndexError:  # TODO bootstrap first post with first post
-        author = entry["profile"]
-    tx.db.insert("entries", entry=dict(**entry, published=now, url=url,
-                                       author=author))
+        author = resource["profile"]
+    tx.db.insert("resources", resource=dict(**resource, published=now,
+                                            url=url, author=author))
     # TODO tx.db.snapshot()
     return url
 
@@ -83,31 +56,22 @@ def dump_entry(url, entry):
 class Home:
     """."""
 
-    def _head(self):
-        self.emit_headers()
-        return ""
-
     def _get(self):
-        self.emit_headers()
         try:
-            owner = load_entry("about")["entry"]
+            owner = load_resource("about")["resource"]
         except IndexError:
             return tmpl.new()
-        entries = tx.db.select("entries, json_tree(entries.entry, '$.name')",
-                               where="json_tree.type == 'text'",
-                               order="published desc", limit=20)
-        return tmpl.home(owner["profile"]["name"], entries)
-
-    def emit_headers(self):
-        """Emit homepage headers for HEAD and GET."""
-        for rel, path in link_headers.items():
-            web.header("Link", f'https://<{tx.request.uri.host}/{path}>;'
-                       'rel="{rel}"', add=True)
+        resources = tx.db.select("resources, "
+                                 "json_tree(resources.resource, '$.name')",
+                                 where="json_tree.type == 'text'",
+                                 order="published desc", limit=20)
+        return tmpl.home(owner["profile"]["name"], resources)
 
     def _post(self):
         name = web.form("name").name
-        dump_entry("about", {"profile": {"name": name, "uid": tx.owner}})
-        dump_entry("{dtslug}/{nameslug}", {"name": "Hello world!"})
+        dump_resource("about", {"type": "card", "name": name, "uid": tx.owner})
+        dump_resource("{dtslug}/{nameslug}", {"type": "entry",
+                                              "name": "Hello world!"})
         return tmpl.welcome(reset_passphrase())
 
 
@@ -136,40 +100,78 @@ class About:
     """."""
 
     def _get(self):
-        owner = load_entry("about")["entry"]
+        owner = load_resource("about")["resource"]
         return tmpl.about(owner["profile"])
 
     def _post(self):
         profile = web.form()
         profile["urls"] = profile["urls"].splitlines()
+        profile["type"] = "card"
         print(profile)
-        dump_entry("about", {"profile": profile})
+        dump_resource("about", profile)
         raise web.SeeOther("/about")
 
 
-@app.route(r"\d{{4}}")
+@app.route(r"{year}")
 class ArchiveYear:
-    """Entries from given year."""
+    """Resources from given year."""
 
     def _get(self):
         return tx.request.uri  # tmpl.archive.year()
 
 
-@app.route(r"\d{{4}}/\d{{,2}}")
+@app.route(r"{year}/{month}")
 class ArchiveMonth:
-    """Entries from given month."""
+    """Resources from given month."""
 
     def _get(self):
         return tx.request.uri  # tmpl.archive.month()
 
 
+# TODO note/article/..
 @app.route(r"{year}/{month}/{day}/{seconds}(/{slug})?")
-class Entry:
-    """An individual entry."""
+class Resource:
+    """An individual resource."""
 
     def _get(self):
-        entry = load_entry(tx.request.uri.path)["entry"]
-        return tmpl.entry(entry)
+        resource = load_resource(tx.request.uri.path)["resource"]
+        return tmpl.resource(resource)
+
+
+@app.route(r"network")
+class Network:
+    """Your social network."""
+
+    def _get(self):
+        resource = load_resource(tx.request.uri.path)["resource"]
+        return tmpl.resource(resource)
+
+
+@app.route(r"network/{person}")
+class Person:
+    """A person in your network."""
+
+    def _get(self):
+        resource = load_resource(tx.request.uri.path)["resource"]
+        return tmpl.resource(resource)
+
+
+@app.route(r"calendar")
+class Calendar:
+    """The people in your network."""
+
+    def _get(self):
+        resource = load_resource(tx.request.uri.path)["resource"]
+        return tmpl.resource(resource)
+
+
+@app.route(r"calendar/{person}")
+class Event:
+    """A person in your network."""
+
+    def _get(self):
+        resource = load_resource(tx.request.uri.path)["resource"]
+        return tmpl.resource(resource)
 
 
 @app.route(r"sign-in")
@@ -184,3 +186,42 @@ class SignIn:
         print(passphrase)
         tx.user.session["me"] = tx.owner  # TODO FIXME !
         raise web.SeeOther("/")
+
+
+app.mount(web.indieauth.server)
+app.mount(web.micropub.server)
+app.mount(web.microsub.reader)
+app.mount(web.microsub.server)
+app.mount(web.webmention.receiver)
+app.mount(web.websub.pub)
+app.mount(web.websub.sub)
+
+
+@app.wrap
+def contextualize(handler, app):
+    """Contextualize this thread based upon the host of the request."""
+    db = sql.db(f"{tx.owner}.db")
+    db.define(resources="""resource JSON,
+                           published TEXT AS
+                               (json_extract(resource, '$.published')) STORED,
+                           url TEXT AS
+                               (json_extract(resource, '$.url')) STORED""",
+              credentials="""created DATETIME NOT NULL
+                                 DEFAULT CURRENT_TIMESTAMP,
+                             salt BLOB, scrypt_hash BLOB""")
+    tx.host.db = db
+    yield
+
+
+@app.wrap
+def template(handler, app):
+    """Wrap the response in a template."""
+    yield
+    if tx.response.headers.content_type == "text/html":
+        tx.response.body = tmpl.template(tx.response.body)
+
+
+app.wrap(web.indieauth.insert_references, "post")
+app.wrap(web.micropub.insert_references, "post")
+app.wrap(web.webmention.insert_references, "post")
+app.wrap(web.websub.insert_references, "post")
