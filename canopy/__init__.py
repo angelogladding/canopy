@@ -43,9 +43,10 @@ def dump_resource(url, resource):
     url = url.format(dtslug=web.timeslug(now),
                      nameslug=web.textslug(resource.get("name", "")))
     try:
-        author = load_resource("about")["resource"]["profile"]
+        author = load_resource("about")["resource"]
     except IndexError:  # TODO bootstrap first post with first post
-        author = resource["profile"]
+        author = dict(resource)
+    author.pop("type")
     tx.db.insert("resources", resource=dict(**resource, published=now,
                                             url=url, author=author))
     # TODO tx.db.snapshot()
@@ -65,7 +66,7 @@ class Home:
                                  "json_tree(resources.resource, '$.name')",
                                  where="json_tree.type == 'text'",
                                  order="published desc", limit=20)
-        return tmpl.home(owner["profile"]["name"], resources)
+        return tmpl.home(owner["name"], resources)
 
     def _post(self):
         name = web.form("name").name
@@ -101,7 +102,7 @@ class About:
 
     def _get(self):
         owner = load_resource("about")["resource"]
-        return tmpl.about(owner["profile"])
+        return tmpl.about(owner)
 
     def _post(self):
         profile = web.form()
