@@ -10,25 +10,10 @@ import web
 from web import tx
 
 
-app = web.application("Canopy", year=r"\d{4}", month=r"\d{2}", day=r"\d{2}",
-                      seconds=web.nb60_re + r"{,4}", slug=r"[\w_]+")
+app = web.application("Canopy", static=__name__, year=r"\d{4}", month=r"\d{2}",
+                      day=r"\d{2}", seconds=web.nb60_re + r"{,4}",
+                      slug=r"[\w_]+", person=r".+", event=".+")
 tmpl = web.templates(__name__)
-
-
-# TODO load_entry -> load_resource
-# {"url": .., "published": ..}
-
-# {"h": "feed", "url": ..}
-# {"h": "entry", "url": ..}
-# note, article, reply, repost, bookmark, like, rsvp, read
-
-# {"card": {"uid": ..}}
-# contact
-
-# {"event": {"url": ..}}
-# {"review": {"url": ..}}
-# {"recipe": {"url": ..}}
-# {"": {"url": ..}}
 
 
 def load_resource(url):
@@ -137,7 +122,6 @@ class ArchiveDay:
         return tx.request.uri  # tmpl.archive.day()
 
 
-# TODO note/article/..
 @app.route(r"{year}/{month}/{day}/{seconds}(/{slug})?")
 class Entry:
     """An individual entry."""
@@ -149,40 +133,40 @@ class Entry:
         return tmpl.entry(resource)
 
 
-# @app.route(r"network")
-# class Network:
-#     """Your social network."""
-#
-#     def _get(self):
-#         resource = load_resource(tx.request.uri.path)["resource"]
-#         return tmpl.resource(resource)
-#
-#
-# @app.route(r"network/{person}")
-# class Person:
-#     """A person in your network."""
-#
-#     def _get(self):
-#         resource = load_resource(tx.request.uri.path)["resource"]
-#         return tmpl.resource(resource)
-#
-#
-# @app.route(r"calendar")
-# class Calendar:
-#     """The people in your network."""
-#
-#     def _get(self):
-#         resource = load_resource(tx.request.uri.path)["resource"]
-#         return tmpl.resource(resource)
-#
-#
-# @app.route(r"calendar/{date}")
-# class Event:
-#     """A person in your network."""
-#
-#     def _get(self):
-#         resource = load_resource(tx.request.uri.path)["resource"]
-#         return tmpl.resource(resource)
+@app.route(r"network")
+class Network:
+    """Your social network."""
+
+    def _get(self):
+        resource = load_resource(tx.request.uri.path)["resource"]
+        return tmpl.resource(resource)
+
+
+@app.route(r"network/{person}")
+class Person:
+    """A person in your network."""
+
+    def _get(self):
+        resource = load_resource(tx.request.uri.path)["resource"]
+        return tmpl.resource(resource)
+
+
+@app.route(r"events")
+class Calendar:
+    """Your event calendar."""
+
+    def _get(self):
+        resource = load_resource(tx.request.uri.path)["resource"]
+        return tmpl.resource(resource)
+
+
+@app.route(r"events/{event}")
+class Event:
+    """An event on your calendar."""
+
+    def _get(self):
+        resource = load_resource(tx.request.uri.path)["resource"]
+        return tmpl.resource(resource)
 
 
 @app.route(r"sign-in")
@@ -193,9 +177,9 @@ class SignIn:
         return tmpl.sign_in()
 
     def _post(self):
-        passphrase = web.form("passphrase").passphrase
-        print(passphrase)
-        tx.user.session["me"] = tx.owner  # TODO FIXME !
+        # TODO passphrase = web.form("passphrase").passphrase
+        tx.user.session["me"] = tx.owner  # FIXME
+        # TODO return_to
         raise web.SeeOther("/")
 
 
