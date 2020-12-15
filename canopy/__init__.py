@@ -138,40 +138,40 @@ class Resource:
         return tmpl.resource(resource)
 
 
-@app.route(r"network")
-class Network:
-    """Your social network."""
-
-    def _get(self):
-        resource = load_resource(tx.request.uri.path)["resource"]
-        return tmpl.resource(resource)
-
-
-@app.route(r"network/{person}")
-class Person:
-    """A person in your network."""
-
-    def _get(self):
-        resource = load_resource(tx.request.uri.path)["resource"]
-        return tmpl.resource(resource)
-
-
-@app.route(r"calendar")
-class Calendar:
-    """The people in your network."""
-
-    def _get(self):
-        resource = load_resource(tx.request.uri.path)["resource"]
-        return tmpl.resource(resource)
-
-
-@app.route(r"calendar/{person}")
-class Event:
-    """A person in your network."""
-
-    def _get(self):
-        resource = load_resource(tx.request.uri.path)["resource"]
-        return tmpl.resource(resource)
+# @app.route(r"network")
+# class Network:
+#     """Your social network."""
+#
+#     def _get(self):
+#         resource = load_resource(tx.request.uri.path)["resource"]
+#         return tmpl.resource(resource)
+#
+#
+# @app.route(r"network/{person}")
+# class Person:
+#     """A person in your network."""
+#
+#     def _get(self):
+#         resource = load_resource(tx.request.uri.path)["resource"]
+#         return tmpl.resource(resource)
+#
+#
+# @app.route(r"calendar")
+# class Calendar:
+#     """The people in your network."""
+#
+#     def _get(self):
+#         resource = load_resource(tx.request.uri.path)["resource"]
+#         return tmpl.resource(resource)
+#
+#
+# @app.route(r"calendar/{date}")
+# class Event:
+#     """A person in your network."""
+#
+#     def _get(self):
+#         resource = load_resource(tx.request.uri.path)["resource"]
+#         return tmpl.resource(resource)
 
 
 @app.route(r"sign-in")
