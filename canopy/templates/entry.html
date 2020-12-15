@@ -4,7 +4,8 @@ $var title: $entry["name"]
 <article class=h-entry>
 <p><big class=p-name>$entry["name"]</big></p>
 $ a = entry["author"]
-<p class="p-author h-card"><a class="u-url p-name" href=//$a["url"]>$a["name"]</a></p>
+<p class="p-author h-card"><a class="u-url p-name"
+href=$a["url"]>$a["name"]</a></p>
 </article>
 
 <style>
