@@ -16,69 +16,16 @@ app = web.application("Canopy", static=__name__, year=r"\d{4}", month=r"\d{2}",
 tmpl = web.templates(__name__)
 
 
-def load_resource(url):
-    """Read a resource and return it with its metadata."""
-    return tx.db.select("resources", where="url = ?", vals=[url],
-                        order="published DESC", limit=1)[0]
-
-
-def dump_resource(url, resource):
-    """Write a resource and return its permalink."""
-    now = web.utcnow()
-    url = url.format(dtslug=web.timeslug(now),
-                     nameslug=web.textslug(resource.get("name", "")))
-    try:
-        author = load_resource("about")["resource"]
-    except IndexError:  # TODO bootstrap first post with first post
-        author = dict(resource)
-    author.pop("type")
-    tx.db.insert("resources", resource=dict(**resource, published=now,
-                                            url=url, author=author))
-    # TODO tx.db.snapshot()
-    return url
-
-
 @app.route(r"")
 class Home:
     """."""
 
     def _get(self):
         try:
-            owner = load_resource("about")["resource"]
+            owner = tx.pub.read("about")
         except IndexError:
             return tmpl.new()
-        resources = tx.db.select("resources, "
-                                 "json_tree(resources.resource, '$.name')",
-                                 where="json_tree.type == 'text'",
-                                 order="published desc", limit=20)
-        return tmpl.home(owner["name"], resources)
-
-    def _post(self):
-        name = web.form("name").name
-        dump_resource("about", {"type": "card", "name": name, "uid": tx.owner})
-        dump_resource("{dtslug}/{nameslug}", {"type": "entry",
-                                              "name": "Hello world!"})
-        return tmpl.welcome(reset_passphrase())
-
-
-def reset_passphrase():
-    """Set a new randomly-generated passphrase and return it."""
-    passphrase_words = set()
-    while len(passphrase_words) < 7:
-        passphrase_words.add(random.choice(web.wordlist))
-    passphrase = "".join(passphrase_words)
-    salt = Crypto.Random.get_random_bytes(64)
-    scrypt_hash = scrypt.hash(passphrase, salt)
-    tx.db.insert("credentials", salt=salt, scrypt_hash=scrypt_hash)
-    # TODO tx.db.snapshot()
-    return passphrase_words
-
-
-def verify_passphrase(passphrase):
-    """Verify given passphrase."""
-    credentials = tx.db.select("credentials", order="created DESC")[0]
-    scrypt_hash = scrypt.hash(passphrase, credentials["salt"])
-    return hmac.compare_digest(scrypt_hash, credentials["scrypt_hash"])
+        return tmpl.home(owner["name"], tx.pub.read_all())
 
 
 @app.route(r"about")
@@ -86,7 +33,7 @@ class About:
     """."""
 
     def _get(self):
-        owner = load_resource("about")["resource"]
+        owner = tx.pub.read("about")
         return tmpl.about(owner)
 
     def _post(self):
@@ -94,7 +41,7 @@ class About:
         profile["urls"] = profile["urls"].splitlines()
         profile["type"] = "card"
         print(profile)
-        dump_resource("about", profile)
+        tx.pub.update("about", profile)
         raise web.SeeOther("/about")
 
 
@@ -129,7 +76,7 @@ class Entry:
     mentionable = True
 
     def _get(self):
-        resource = load_resource(tx.request.uri.path)["resource"]
+        resource = tx.pub.read(tx.request.uri.path)
         return tmpl.entry(resource)
 
 
@@ -138,7 +85,7 @@ class Network:
     """Your social network."""
 
     def _get(self):
-        resource = load_resource(tx.request.uri.path)["resource"]
+        resource = tx.pub.read(tx.request.uri.path)
         return tmpl.resource(resource)
 
 
@@ -147,7 +94,7 @@ class Person:
     """A person in your network."""
 
     def _get(self):
-        resource = load_resource(tx.request.uri.path)["resource"]
+        resource = tx.pub.read(tx.request.uri.path)
         return tmpl.resource(resource)
 
 
@@ -156,7 +103,7 @@ class Calendar:
     """Your event calendar."""
 
     def _get(self):
-        resource = load_resource(tx.request.uri.path)["resource"]
+        resource = tx.pub.read(tx.request.uri.path)
         return tmpl.resource(resource)
 
 
@@ -165,22 +112,8 @@ class Event:
     """An event on your calendar."""
 
     def _get(self):
-        resource = load_resource(tx.request.uri.path)["resource"]
+        resource = tx.pub.read(tx.request.uri.path)
         return tmpl.resource(resource)
-
-
-@app.route(r"sign-in")
-class SignIn:
-    """Sign in as the owner of the site."""
-
-    def _get(self):
-        return tmpl.sign_in()
-
-    def _post(self):
-        # TODO passphrase = web.form("passphrase").passphrase
-        tx.user.session["me"] = tx.owner  # FIXME
-        # TODO return_to
-        raise web.SeeOther("/")
 
 
 app.mount(web.indieauth.server)
@@ -196,12 +129,7 @@ app.mount(web.websub.sub)
 def contextualize(handler, app):
     """Contextualize this thread based upon the host of the request."""
     db = sql.db(f"{tx.owner}.db")
-    db.define(resources="""resource JSON,
-                           published TEXT AS
-                               (json_extract(resource, '$.published')) STORED,
-                           url TEXT AS
-                               (json_extract(resource, '$.url')) STORED""",
-              credentials="""created DATETIME NOT NULL
+    db.define(credentials="""created DATETIME NOT NULL
                                  DEFAULT CURRENT_TIMESTAMP,
                              salt BLOB, scrypt_hash BLOB""")
     tx.host.db = db
@@ -220,3 +148,49 @@ app.wrap(web.indieauth.insert_references, "post")
 app.wrap(web.micropub.insert_references, "post")
 app.wrap(web.webmention.insert_references, "post")
 app.wrap(web.websub.insert_references, "post")
+
+
+def reset_passphrase():
+    """Set a new randomly-generated passphrase and return it."""
+    passphrase_words = set()
+    while len(passphrase_words) < 7:
+        passphrase_words.add(random.choice(web.wordlist))
+    passphrase = "".join(passphrase_words)
+    salt = Crypto.Random.get_random_bytes(64)
+    scrypt_hash = scrypt.hash(passphrase, salt)
+    tx.db.insert("credentials", salt=salt, scrypt_hash=scrypt_hash)
+    # TODO tx.db.snapshot()
+    return passphrase_words
+
+
+def verify_passphrase(passphrase):
+    """Verify given passphrase."""
+    credentials = tx.db.select("credentials", order="created DESC")[0]
+    scrypt_hash = scrypt.hash(passphrase, credentials["salt"])
+    return hmac.compare_digest(scrypt_hash, credentials["scrypt_hash"])
+
+
+@app.route(r"initialize")
+class Initialize:
+    """."""
+
+    def _post(self):
+        name = web.form("name").name
+        tx.pub.create("about", {"type": "card", "name": name, "uid": tx.owner})
+        tx.pub.create("{dtslug}/{nameslug}", {"type": "entry",
+                                              "name": "Hello world!"})
+        return tmpl.welcome(reset_passphrase())
+
+
+@app.route(r"sign-in")
+class SignIn:
+    """Sign in as the owner of the site."""
+
+    def _get(self):
+        return tmpl.sign_in()
+
+    def _post(self):
+        # TODO passphrase = web.form("passphrase").passphrase
+        tx.user.session["me"] = tx.owner  # FIXME
+        # TODO return_to
+        raise web.SeeOther("/")
