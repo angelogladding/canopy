@@ -1,8 +1,9 @@
 $def with (profile)
 $var title: About Me
 
-<h1>$profile["name"]</h1>
-<p><a href=//$profile["uid"]>@$profile["uid"]</a></p>
+<article class=h-card>
+<h1 class=p-name>$profile["name"]</h1>
+<p><a class="u-url u-uid" href=//$profile["uid"]>@$profile["uid"]</a></p>
 
 <ul>\
 $for url in profile.get("urls", []):

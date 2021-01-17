@@ -176,9 +176,11 @@ class Initialize:
 
     def _post(self):
         name = web.form("name").name
-        tx.pub.create("about", {"type": "card", "name": name, "uid": tx.owner})
-        tx.pub.create("{dtslug}/{nameslug}", {"type": "entry",
-                                              "name": "Hello world!"})
+        tx.pub.create("about", {"type": ["h-card"],
+                                "properties": {"name": name, "uid": tx.owner}})
+        tx.pub.create("{dtslug}/{nameslug}",
+                      {"type": ["h-entry"],
+                       "properties": {"name": "Hello world!"}})
         return tmpl.welcome(reset_passphrase())
 
 
