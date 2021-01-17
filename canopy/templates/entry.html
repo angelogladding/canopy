@@ -1,9 +1,10 @@
 $def with (entry)
-$var title: $entry["name"]
+$ e = entry["properties"]
+$var title: $e["name"]
 
 <article class=h-entry>
-<p><big class=p-name>$entry["name"]</big></p>
-$ a = entry["author"]
+<p><big class=p-name>$e["name"]</big></p>
+$ a = e["author"]
 <p class="p-author h-card"><a class="u-url p-name"
 href=$a["url"]>$a["name"]</a></p>
 </article>
