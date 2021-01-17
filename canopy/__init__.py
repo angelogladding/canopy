@@ -176,7 +176,8 @@ class Initialize:
     def _post(self):
         name = web.form("name").name
         tx.pub.create("about", {"type": ["h-card"],
-                                "properties": {"name": name, "uid": tx.owner}})
+                                "properties": {"name": name, "uid": tx.owner,
+                                               "url": [tx.owner]}})
         tx.pub.create("{dtslug}/{nameslug}",
                       {"type": ["h-entry"],
                        "properties": {"name": "Hello world!"}})
