@@ -33,8 +33,7 @@ class About:
     """."""
 
     def _get(self):
-        owner = tx.pub.read("about")
-        return tmpl.about(owner)
+        return tmpl.about(tx.pub.read("about")["properties"])
 
     def _post(self):
         profile = web.form()
