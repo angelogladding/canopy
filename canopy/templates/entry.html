@@ -6,7 +6,7 @@ $var title: $e["content"]
 <p><big class=p-content>$e["content"]</big></p>
 $ a = e["author"]["properties"]
 <p class="p-author h-card"><a class="u-url p-name"
-href=$a["url"]>$a["name"]</a></p>
+href=$a["url"][0]>$a["name"]</a></p>
 </article>
 
 <style>
