@@ -2,9 +2,10 @@ $def with (name, resources)
 $var title: $name
 
 <h1 class=h-card><a class="u-url u-uid p-name" href=/>$name</a></h1>
+j
 $for resource in resources:
     $ r = resource["resource"]["properties"]
-    <p class=h-entry><big class=p-name>$r["name"]</big><br><small><a
+    <p class=h-entry><big class=p-content>$r["content"]</big><br><small><a
     class=u-url href=$r["url"]>$r["published"].diff_for_humans()</a></small></p>
 
 $if tx.is_owner:
