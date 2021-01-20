@@ -5,8 +5,15 @@ $var title: $name
 
 $for resource in resources:
     $ r = resource["properties"]
-    <p class=h-entry><big class=p-content>$r["content"]</big><br><small><a
-    class=u-url href=$r["url"]>$r["published"].diff_for_humans()</a></small></p>
+    $ type = discover_post_type(r)
+    <div class=h-entry>
+    $if type == "note":
+        <big class=p-content>$r["content"]</big>
+    $elif type == "bookmark":
+        $ bookmark = r["bookmark-of"]["properties"]
+        <big><a class=u-bookmark-of href=$bookmark["url"]>$bookmark["name"]</a></big>
+    <p><small><a class=u-url href=$r["url"]>$r["published"].diff_for_humans()</a></small></p>
+    </div>
 
 $if tx.is_owner:
     <p>Hello $name &mdash; <a href=/about>update your profile</a></p>
