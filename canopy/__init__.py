@@ -22,7 +22,7 @@ class Home:
 
     def _get(self):
         try:
-            owner = tx.pub.read("")["resource"]
+            owner = tx.pub.read("")
         except IndexError:
             return tmpl.new()
         return tmpl.home(owner["properties"]["name"], tx.pub.recent_entries())
