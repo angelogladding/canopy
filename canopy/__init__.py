@@ -75,7 +75,6 @@ class Entry:
     mentionable = True
 
     def _get(self):
-        print(tx.request.uri.path)
         resource = tx.pub.read(tx.request.uri.path)
         return tmpl.entry(resource)
 
@@ -177,12 +176,8 @@ class Initialize:
     def _post(self):
         name = web.form("name").name
         uid = str(web.uri(tx.owner))
-        tx.pub.create("", {"type": ["h-card"],
-                           "properties": {"name": name, "uid": uid,
-                                          "url": [uid]}})
-        tx.pub.create("{timeslug}/{nameslug}", {"type": ["h-entry"],
-                                                "properties":
-                                                {"content": "Hello world!"}})
+        tx.pub.create("h-card", {"name": name, "uid": uid, "url": [uid]})
+        tx.pub.create("h-entry", {"content": "Hello world!"})
         return tmpl.welcome(reset_passphrase())
 
 
