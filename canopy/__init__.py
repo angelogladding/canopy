@@ -181,7 +181,7 @@ class Initialize:
                                           "url": [uid]}})
         tx.pub.create("{timeslug}/{nameslug}", {"type": ["h-entry"],
                                                 "properties":
-                                                {"name": "Hello world!"}})
+                                                {"content": "Hello world!"}})
         return tmpl.welcome(reset_passphrase())
 
 
