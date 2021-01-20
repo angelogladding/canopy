@@ -22,7 +22,7 @@ class Home:
 
     def _get(self):
         try:
-            owner = tx.pub.read("about")
+            owner = tx.pub.read("")
         except IndexError:
             return tmpl.new()
         return tmpl.home(owner["properties"]["name"], tx.pub.read_all())
@@ -175,10 +175,11 @@ class Initialize:
 
     def _post(self):
         name = web.form("name").name
-        tx.pub.create("about", {"type": ["h-card"],
-                                "properties": {"name": name, "uid": tx.owner,
-                                               "url": [tx.owner]}})
-        tx.pub.create("{dtslug}/{nameslug}",
+        uid = str(web.uri(tx.owner))
+        tx.pub.create("/", {"type": ["h-card"],
+                            "properties": {"name": name, "uid": uid,
+                                           "url": [uid]}})
+        tx.pub.create("/{dtslug}/{nameslug}",
                       {"type": ["h-entry"],
                        "properties": {"name": "Hello world!"}})
         return tmpl.welcome(reset_passphrase())
