@@ -3,7 +3,7 @@ $ e = entry["properties"]
 $var title: $e["name"]
 
 <article class=h-entry>
-<p><big class=p-name>$e["name"]</big></p>
+<p><big class=p-content>$e["content"]</big></p>
 $ a = e["author"]["properties"]
 <p class="p-author h-card"><a class="u-url p-name"
 href=$a["url"]>$a["name"]</a></p>
