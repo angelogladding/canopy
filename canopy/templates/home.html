@@ -2,7 +2,7 @@ $def with (name, resources)
 $var title: $name
 
 <h1 class=h-card><a class="u-url u-uid p-name" href=/>$name</a></h1>
-j
+
 $for resource in resources:
     $ r = resource["resource"]["properties"]
     <p class=h-entry><big class=p-content>$r["content"]</big><br><small><a

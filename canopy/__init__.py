@@ -75,6 +75,7 @@ class Entry:
     mentionable = True
 
     def _get(self):
+        print(tx.request.uri.path)
         resource = tx.pub.read(tx.request.uri.path)
         return tmpl.entry(resource)
 
