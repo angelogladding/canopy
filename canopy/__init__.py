@@ -25,7 +25,7 @@ class Home:
             owner = tx.pub.read("")
         except IndexError:
             return tmpl.new()
-        return tmpl.home(owner["properties"]["name"], tx.pub.read_all())
+        return tmpl.home(owner["properties"]["name"], tx.pub.recent_entries())
 
 
 @app.route(r"about")
