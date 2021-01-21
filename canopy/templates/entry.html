@@ -1,14 +1,15 @@
 $def with (entry)
 $ e = entry["properties"]
-$var title: $e["content"]
 
 <article class=h-entry>
 $ type = discover_post_type(e)
 <div class=h-entry>
 $if type == "note":
+    $var title: $e["content"]
     <p><big class=p-content>$e["content"]</big></p>
 $elif type == "bookmark":
     $ bookmark = e["bookmark-of"][0]["properties"]
+    $var title: Bookmarked $bookmark["name"]
     <p><big>Bookmarked <a class=u-bookmark-of href=$bookmark["url"]>$bookmark["name"]</a></big></p>
 $ a = e["author"]["properties"]
 <p class="p-author h-card"><a class="u-url p-name"
