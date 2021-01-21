@@ -1,10 +1,5 @@
 """A full-stack IndieWeb client."""
 
-import hmac
-import random
-
-import Crypto.Random
-import scrypt
 import sql
 import web
 from web import tx
@@ -26,6 +21,37 @@ class Home:
         except IndexError:
             return tmpl.new()
         return tmpl.home(owner["properties"], tx.pub.recent_entries())
+
+
+@app.route(r"initialize")
+class Initialize:
+    """."""
+
+    def _post(self):
+        name = web.form("name").name
+        uid = str(web.uri(tx.owner))
+        tx.pub.create("h-card", {"name": name, "uid": uid, "url": [uid]})
+        tx.pub.create("h-entry", {"content": "Hello world!"})
+        salt, scrypt_hash, passphrase = web.generate_passphrase()
+        tx.db.insert("credentials", salt=salt, scrypt_hash=scrypt_hash)
+        return tmpl.welcome(passphrase)
+
+
+@app.route(r"sign-in")
+class SignIn:
+    """Sign in as the owner of the site."""
+
+    def _get(self):
+        return tmpl.sign_in()
+
+    def _post(self):
+        form = web.form("passphrase", return_to="/")
+        credential = tx.db.select("credentials", order="created DESC")[0]
+        if web.verify_passphrase(credential["salt"], credential["scrypt_hash"],
+                                 form.passphrase):
+            tx.user.session["me"] = tx.owner
+            raise web.SeeOther(form.return_to)
+        raise web.Unauthorized("bad passphrase")
 
 
 @app.route(r"about")
@@ -130,7 +156,7 @@ def contextualize(handler, app):
     db = sql.db(f"{tx.owner}.db")
     db.define(credentials="""created DATETIME NOT NULL
                                  DEFAULT CURRENT_TIMESTAMP,
-                             salt BLOB, scrypt_hash BLOB""")
+                             salt BLOB, hash BLOB""")
     tx.host.db = db
     yield
 
@@ -147,49 +173,3 @@ app.wrap(web.indieauth.insert_references, "post")
 app.wrap(web.micropub.insert_references, "post")
 app.wrap(web.webmention.insert_references, "post")
 app.wrap(web.websub.insert_references, "post")
-
-
-def reset_passphrase():
-    """Set a new randomly-generated passphrase and return it."""
-    passphrase_words = set()
-    while len(passphrase_words) < 7:
-        passphrase_words.add(random.choice(web.wordlist))
-    passphrase = "".join(passphrase_words)
-    salt = Crypto.Random.get_random_bytes(64)
-    scrypt_hash = scrypt.hash(passphrase, salt)
-    tx.db.insert("credentials", salt=salt, scrypt_hash=scrypt_hash)
-    # TODO tx.db.snapshot()
-    return passphrase_words
-
-
-def verify_passphrase(passphrase):
-    """Verify given passphrase."""
-    credentials = tx.db.select("credentials", order="created DESC")[0]
-    scrypt_hash = scrypt.hash(passphrase, credentials["salt"])
-    return hmac.compare_digest(scrypt_hash, credentials["scrypt_hash"])
-
-
-@app.route(r"initialize")
-class Initialize:
-    """."""
-
-    def _post(self):
-        name = web.form("name").name
-        uid = str(web.uri(tx.owner))
-        tx.pub.create("h-card", {"name": name, "uid": uid, "url": [uid]})
-        tx.pub.create("h-entry", {"content": "Hello world!"})
-        return tmpl.welcome(reset_passphrase())
-
-
-@app.route(r"sign-in")
-class SignIn:
-    """Sign in as the owner of the site."""
-
-    def _get(self):
-        return tmpl.sign_in()
-
-    def _post(self):
-        # TODO passphrase = web.form("passphrase").passphrase
-        tx.user.session["me"] = tx.owner  # FIXME
-        # TODO return_to
-        raise web.SeeOther("/")
