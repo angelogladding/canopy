@@ -156,7 +156,7 @@ def contextualize(handler, app):
     db = sql.db(f"{tx.owner}.db")
     db.define(credentials="""created DATETIME NOT NULL
                                  DEFAULT CURRENT_TIMESTAMP,
-                             salt BLOB, hash BLOB""")
+                             salt BLOB, scrypt_hash BLOB""")
     tx.host.db = db
     yield
 
