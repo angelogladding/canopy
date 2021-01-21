@@ -8,10 +8,10 @@ $for entry in entries:
     $ type = discover_post_type(e)
     <div class=h-entry>
     $if type == "note":
-        <big class=p-content>$e["content"]</big>
+        <p><big class=p-content>$e["content"]</big></p>
     $elif type == "bookmark":
         $ bookmark = e["bookmark-of"][0]["properties"]
-        <big><a class=u-bookmark-of href=$bookmark["url"]>$bookmark["name"]</a></big>
+        <p><big>Bookmarked <a class=u-bookmark-of href=$bookmark["url"]>$bookmark["name"]</a></big></p>
     <p><small><a class=u-url href=$e["url"]>$e["published"].diff_for_humans()</a></small></p>
     </div>
 

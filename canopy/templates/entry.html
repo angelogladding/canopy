@@ -3,7 +3,13 @@ $ e = entry["properties"]
 $var title: $e["content"]
 
 <article class=h-entry>
-<p><big class=p-content>$e["content"]</big></p>
+$ type = discover_post_type(e)
+<div class=h-entry>
+$if type == "note":
+    <p><big class=p-content>$e["content"]</big></p>
+$elif type == "bookmark":
+    $ bookmark = e["bookmark-of"][0]["properties"]
+    <p><big>Bookmarked <a class=u-bookmark-of href=$bookmark["url"]>$bookmark["name"]</a></big></p>
 $ a = e["author"]["properties"]
 <p class="p-author h-card"><a class="u-url p-name"
 href=$a["url"][0]>$a["name"]</a></p>
