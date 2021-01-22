@@ -173,7 +173,7 @@ def template(handler, app):
         tx.response.body = tmpl.template(tx.response.body)
 
 
-app.wrap(web.indieauth.insert_references, "post")
-app.wrap(web.micropub.insert_references, "post")
-app.wrap(web.webmention.insert_references, "post")
-app.wrap(web.websub.insert_references, "post")
+app.wrap(web.indieauth.wrap_server, "post")
+app.wrap(web.micropub.wrap_server, "post")
+app.wrap(web.webmention.wrap, "post")
+app.wrap(web.websub.wrap_server, "post")
