@@ -176,4 +176,4 @@ def template(handler, app):
 app.wrap(web.indieauth.wrap_server, "post")
 app.wrap(web.micropub.wrap_server, "post")
 app.wrap(web.webmention.wrap, "post")
-app.wrap(web.websub.wrap_server, "post")
+app.wrap(web.websub.wrap_hub, "post")
