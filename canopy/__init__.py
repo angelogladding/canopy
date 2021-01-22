@@ -34,6 +34,7 @@ class Initialize:
         tx.pub.create("h-entry", {"content": "Hello world!"})
         salt, scrypt_hash, passphrase = web.generate_passphrase()
         tx.db.insert("credentials", salt=salt, scrypt_hash=scrypt_hash)
+        tx.user.session["me"] = tx.owner
         return tmpl.welcome(passphrase)
 
 
@@ -154,7 +155,10 @@ app.mount(web.websub.sub)
 def contextualize(handler, app):
     """Contextualize this thread based upon the host of the request."""
     db = sql.db(f"{tx.owner}.db")
-    db.define(credentials="""created DATETIME NOT NULL
+    db.define(signins="""initiated DATETIME NOT NULL
+                             DEFAULT CURRENT_TIMESTAMP,
+                         user_agent TEXT, ip TEXT""",
+              credentials="""created DATETIME NOT NULL
                                  DEFAULT CURRENT_TIMESTAMP,
                              salt BLOB, scrypt_hash BLOB""")
     tx.host.db = db
