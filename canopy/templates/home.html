@@ -9,6 +9,9 @@ $for entry in entries:
     <div class=h-entry>
     $if type == "note":
         <p><big class=p-content>$e["content"]</big></p>
+    $elif type == "like":
+        $ like = e["like-of"][0]["properties"]
+        <p><big>Liked <a class=u-like-of href=$like["url"]>$like["name"]</a></big></p>
     $elif type == "bookmark":
         $ bookmark = e["bookmark-of"][0]["properties"]
         <p><big>Bookmarked <a class=u-bookmark-of href=$bookmark["url"]>$bookmark["name"]</a></big></p>
