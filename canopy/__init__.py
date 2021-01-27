@@ -162,6 +162,7 @@ def contextualize(handler, app):
                                  DEFAULT CURRENT_TIMESTAMP,
                              salt BLOB, scrypt_hash BLOB""")
     tx.host.db = db
+    tx.host.cache = web.cache()
     yield
 
 
