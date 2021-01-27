@@ -147,8 +147,8 @@ app.mount(web.micropub.server)
 app.mount(web.microsub.reader)
 app.mount(web.microsub.server)
 app.mount(web.webmention.receiver)
-app.mount(web.websub.pub)
-app.mount(web.websub.sub)
+app.mount(web.websub.hub)
+app.mount(web.websub.subs)
 
 
 @app.wrap
